@@ -248,7 +248,7 @@ app.use(function (err, req, res, next) {
 // httpServer.listen(3000);
 // httpsServer.listen(443);
 
-let server = app.listen(3000, function () {
+let server = app.listen(process.env.PORT, function () {
   console.log('Your app is listening on port ' + server.address().port);
 });
 
