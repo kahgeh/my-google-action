@@ -1,6 +1,10 @@
 // server.js
 // where your node app starts
-
+// const fs = require('fs');
+// const http = require('http');
+// const https = require('https');
+// const privateKey = fs.readFileSync('sslcert/server.key', 'utf8');
+// const certificate = fs.readFileSync('sslcert/server.crt', 'utf8');
 // init project
 const express = require('express');
 const ApiAiAssistant = require('actions-on-google').ApiAiAssistant;
@@ -94,33 +98,68 @@ app.post('/', function (req, res, next) {
   }
 
   function countTotal(assistant) {
-    assistant.ask('count total!')
-  }
-
-  function createSpend(assistant) {
     let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
-    let count = 0;
+    let data;
     request('http://54.69.169.144:5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
         let body = JSON.parse(response.body);
-        count = body.reduce(function (acc, cur) {
-
-          if (cur.tags.find(function (tag) {
-              return (tag.subject === 'categories' && tag.value === getCountOfReceiptCategoryContext.category);
-            })) {
-            acc = acc + cur.files.length;
+        data = body.reduce(function (acc, cur) {
+          let workingNote = cur.tags.find(function (tag) {
+            return (tag.subject === 'categories' && tag.value === getCountOfReceiptCategoryContext.parameters.category);
+          });
+          if (workingNote) {
+            acc.fileCount = acc.fileCount + cur.files.length;
+            const targetedDocument = cur.notes.find(function (note) {
+              return note.name === 'targetedDocument';
+            });
+            if(targetedDocument){
+              const amount = JSON.parse(targetedDocument.value).amount;
+              acc.totalAmount = acc.totalAmount +amount;
+            }
           }
 
           return acc;
-        }, 0);
+        }, { fileCount: 0, totalAmount: 0 });
+
+        assistant.ask('total amount for ' + getCountOfReceiptCategoryContext.parameters.category + ': ' + data.totalAmount);
+      }
+    });
+  }
+
+  function createSpend(assistant) {
+    let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
+    let data;
+    request('http://54.69.169.144:5001/api/v1/workingNotes', function (error, response) {
+      if (error) {
+        next(error);
+      } else {
+        let body = JSON.parse(response.body);
+        data = body.reduce(function (acc, cur) {
+          let workingNote = cur.tags.find(function (tag) {
+            return (tag.subject === 'categories' && tag.value === getCountOfReceiptCategoryContext.parameters.category);
+          });
+          if (workingNote) {
+            acc.fileCount = acc.fileCount + cur.files.length;
+            const targetedDocument = cur.notes.find(function (note) {
+              return note.name === 'targetedDocument';
+            });
+            if(targetedDocument){
+              const amount = JSON.parse(targetedDocument.value).amount;
+              acc.totalAmount = acc.totalAmount +amount;
+            }
+          }
+
+          return acc;
+        }, { fileCount: 0, totalAmount: 0 });
+
         const googleRichResponse = assistant.buildRichResponse()
-          .addSimpleResponse('Are you sure you want to create ' + count + ' spend monies?')
+          .addSimpleResponse('Are you sure you want to create ' + data.fileCount + ' spend monies for '+ data.totalAmount +'?')
           .addSuggestions(
             ['Yes', 'No'])
           // Create a basic card and add it to the rich response
-          .addBasicCard(assistant.buildBasicCard('Are you sure you want to create ' + count + ' spend monies?') // Note the two spaces before '\n' required for a
+          .addBasicCard(assistant.buildBasicCard('Are you sure you want to create ' + data.fileCount + ' spend monies for '+ data.totalAmount +'?') // Note the two spaces before '\n' required for a
           // line break to be rendered in the card
             .setTitle('Create Spend Monies')
             .setImage('https://www.xero.com/content/dam/xero/images/features/expenses/features-illustrations-mobile-reciept.svg',
@@ -141,7 +180,7 @@ app.post('/', function (req, res, next) {
         const targetedDocuments = body.reduce(function (acc, cur) {
 
           if (cur.tags.find(function (tag) {
-              return (tag.subject === 'categories' && tag.value === getCountOfReceiptCategoryContext.category);
+              return (tag.subject === 'categories' && tag.value === getCountOfReceiptCategoryContext.parameters.category);
             })) {
             const targetedDocument = cur.notes.find(function (note) {
               return note.name === 'targetedDocument';
@@ -156,19 +195,23 @@ app.post('/', function (req, res, next) {
               return rp({
                 method: 'POST',
                 uri: 'http://54.69.169.144:5000/api/v1/bff/xeroDraftDocument',
-                body: doc.value,
+                body: JSON.parse(doc.value),
                 json: true // Automatically stringifies the body to JSON
               })
                 .then(function (body) {
                   return body;
-                });
+                })
+                .catch(function (err) {
+                  console.log('err', err);
+                })
+                ;
             }
           ))
         });
         const createDocsSource = Rx.Observable.forkJoin(targetedDocumentReqs);
         const subscribe = createDocsSource.subscribe(
           function (result) {
-            res.json(result);
+            assistant.ask('created spend money for ' + getCountOfReceiptCategoryContext.parameters.file + ' ' + getCountOfReceiptCategoryContext.parameters.category + '!')
           },
           function (err) {
             res.json({ error: err });
@@ -194,15 +237,17 @@ app.post('/', function (req, res, next) {
 app.use(function (err, req, res, next) {
   console.error(err.stack)
   res.status(500).send('Something broke!')
-})
+});
 
-// Pretty print objects for logging.
-function logObject(message, object, options) {
-  console.log(message);
-  console.log(prettyjson.render(object, options));
-}
 
 // Listen for requests.
+
+// const httpServer = http.createServer(app);
+// const httpsServer = https.createServer(credentials, app);
+//
+// httpServer.listen(3000);
+// httpsServer.listen(443);
+
 let server = app.listen(3000, function () {
   console.log('Your app is listening on port ' + server.address().port);
 });
