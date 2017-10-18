@@ -172,7 +172,7 @@ app.post('/', function (req, res, next) {
 
   function createSpendYes(assistant) {
     let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
-    request('http://ec2-52-35-51-39.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://ec2-34-215-167-45.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
