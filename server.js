@@ -76,7 +76,7 @@ app.post('/', function (req, res, next) {
     let file = assistant.getArgument('file');
     let category = assistant.getArgument('category');
 
-    request('http://ec2-52-35-51-39.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://ec2-34-215-167-45.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
@@ -100,7 +100,7 @@ app.post('/', function (req, res, next) {
   function countTotal(assistant) {
     let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
     let data;
-    request('http://ec2-52-35-51-39.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://ec2-34-215-167-45.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
@@ -131,7 +131,7 @@ app.post('/', function (req, res, next) {
   function createSpend(assistant) {
     let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
     let data;
-    request('http://ec2-52-35-51-39.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://ec2-34-215-167-45.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
@@ -194,7 +194,7 @@ app.post('/', function (req, res, next) {
             function () {
               return rp({
                 method: 'POST',
-                uri: 'http://ec2-52-35-51-39.us-west-2.compute.amazonaws.com:5000/api/v1/bff/xeroDraftDocument',
+                uri: 'http://ec2-34-215-167-45.us-west-2.compute.amazonaws.com:5000/api/v1/bff/xeroDraftDocument',
                 body: JSON.parse(doc.value),
                 json: true // Automatically stringifies the body to JSON
               })
