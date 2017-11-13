@@ -14,6 +14,7 @@ const rp = require('request-promise-native');
 const Rx = require('rxjs');
 const app = express();
 const Map = require('es6-map');
+const serverName='ec2-34-215-252-215.us-west-2.compute.amazonaws.com';
 
 // Pretty JSON output for logs
 const prettyjson = require('prettyjson');
@@ -76,7 +77,7 @@ app.post('/', function (req, res, next) {
     let file = assistant.getArgument('file');
     let category = assistant.getArgument('category');
 
-    request('http://ec2-34-215-252-215.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://' + serverName +':5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
@@ -100,7 +101,7 @@ app.post('/', function (req, res, next) {
   function countTotal(assistant) {
     let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
     let data;
-    request('http://ec2-34-215-252-215.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://' + serverName + ':5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
@@ -131,7 +132,7 @@ app.post('/', function (req, res, next) {
   function createSpend(assistant) {
     let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
     let data;
-    request('http://ec2-34-215-252-215.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://' + serverName + ':5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
@@ -172,7 +173,7 @@ app.post('/', function (req, res, next) {
 
   function createSpendYes(assistant) {
     let getCountOfReceiptCategoryContext = assistant.getContext('getcountofreceiptcategory-followup');
-    request('http://ec2-34-215-252-215.us-west-2.compute.amazonaws.com:5001/api/v1/workingNotes', function (error, response) {
+    request('http://' + serverName + ':5001/api/v1/workingNotes', function (error, response) {
       if (error) {
         next(error);
       } else {
@@ -194,7 +195,7 @@ app.post('/', function (req, res, next) {
             function () {
               return rp({
                 method: 'POST',
-                uri: 'http://ec2-34-215-252-215.us-west-2.compute.amazonaws.com:5000/api/v1/bff/xeroDraftDocument',
+                uri: 'http://' + serverName + ':5000/api/v1/bff/xeroDraftDocument',
                 body: JSON.parse(doc.value),
                 json: true // Automatically stringifies the body to JSON
               })
