@@ -14,7 +14,7 @@ const rp = require('request-promise-native');
 const Rx = require('rxjs');
 const app = express();
 const Map = require('es6-map');
-const serverName='ec2-34-215-252-215.us-west-2.compute.amazonaws.com';
+const serverName='ec2-34-214-80-115.us-west-2.compute.amazonaws.com';
 
 // Pretty JSON output for logs
 const prettyjson = require('prettyjson');
